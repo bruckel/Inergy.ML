@@ -14,11 +14,19 @@ namespace Inergy.ML.Data
         /// Constructor
         /// </summary>
         /// <param name="context">Contexto de la BB.DD. Mongo</param>
+        /// <param name="collectionName">Nombre de la colección</param>
         public DataReadingRepository(IMongoContext context, string collectionName) : base(context, collectionName)
         {
 
         }
 
+        /// <summary>
+        /// Obtener lecturas por identificador y rango de fechas
+        /// </summary>
+        /// <param name="cups">Identificador</param>
+        /// <param name="beginTimeStamp">Fecha de inicio</param>
+        /// <param name="endTimeStamp">Fecha de fin</param>
+        /// <returns>Resultado de la consulta</returns>
         public async Task<IEnumerable<DataReading>> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
         {
             try
@@ -38,21 +46,16 @@ namespace Inergy.ML.Data
             }
         }
 
-        public IEnumerable<UpdateResult> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
+        /// <summary>
+        /// Insertar lecturas
+        /// </summary>
+        /// <param name="dataReadings">Lecturas</param>
+        /// <returns>Resultado de la insercción</returns>
+        public async Task<bool> InsertDataReadings(IEnumerable<DataReading> dataReadings)
         {
             try
             {
-                List<UpdateResult> updateResults = new List<UpdateResult>();
-
-                //* Actualizar valores, y si no existe, insertar *//
-                dataReadings.AsParallel().ForAll(d =>
-                {
-                    updateResults.Add(this.GetAll().UpdateOne<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp, 
-                                                                            Builders<DataReading>.Update.Set(p => p.Value, d.Value), 
-                                                                            new UpdateOptions { IsUpsert = true }));
-                });
-
-                return updateResults;
+                return await Task.Run(() => this.Add(dataReadings));
             }
             catch (Exception exception)
             {
@@ -60,12 +63,49 @@ namespace Inergy.ML.Data
             }
         }
 
-        public DeleteResult DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
+        /// <summary>
+        /// Actualizar lecturas
+        /// </summary>
+        /// <param name="dataReadings">lecturas</param>
+        /// <returns>Resultado de la actualización</returns>
+        public async Task<IEnumerable<UpdateResult>> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
+        {
+            try
+            {
+                List<UpdateResult> updateResults = new List<UpdateResult>();
+
+                //* Actualizar valores, y si no existe, insertar *//
+                dataReadings.AsParallel().ForAll(async d =>
+                {
+                    //* Upsert indica que si el registro de lectura no existe se añade *//
+                    var updateResult = await this.GetAll().UpdateOneAsync<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp, 
+                                                                                        Builders<DataReading>.Update.Set(p => p.Value, d.Value), 
+                                                                                        new UpdateOptions { IsUpsert = true });
+
+                    updateResults.Add(updateResult);
+                });
+
+                return await Task.Run(() => updateResults);
+            }
+            catch (Exception exception)
+            {
+                throw (exception);
+            }
+        }
+
+        /// <summary>
+        /// Eliminar lecturas en función de indentificador y rango de fechas
+        /// </summary>
+        /// <param name="cups">Identificador</param>
+        /// <param name="beginTimeStamp">Fecha de inicio</param>
+        /// <param name="endTimeStamp">Fecha de fin</param>
+        /// <returns>Resultado de la eliminación</returns>
+        public async Task<DeleteResult> DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
         {
             try
             {
                 //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
-                return this.GetAll().DeleteMany<DataReading>(e => e.Cups == cups
+                return await this.GetAll().DeleteManyAsync<DataReading>(e => e.Cups == cups
                                                                         && e.TimeStamp >= beginTimeStamp
                                                                         && e.TimeStamp <= endTimeStamp);
             }
