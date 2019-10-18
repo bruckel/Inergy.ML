@@ -38,35 +38,41 @@ namespace Inergy.ML.Data
             }
         }
 
-        //public async Task<IEnumerable<DataReading>> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
-        //{
-        //    try
-        //    {
-        //        //dataReadings.AsParallel().ForAll(async d =>
-        //        //{
-        //        //    var t = "hola";
-        //        //});
+        public IEnumerable<UpdateResult> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
+        {
+            try
+            {
+                List<UpdateResult> updateResults = new List<UpdateResult>();
 
+                //* Actualizar valores, y si no existe, insertar *//
+                dataReadings.AsParallel().ForAll(d =>
+                {
+                    updateResults.Add(this.GetAll().UpdateOne<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp, 
+                                                                            Builders<DataReading>.Update.Set(p => p.Value, d.Value), 
+                                                                            new UpdateOptions { IsUpsert = true }));
+                });
 
-        //        //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
-        //        //            var dataReadings = this.GetAll().UpdateMany<DataReading>(e => e.Cups == cups
-        //        //                                                                        && e.TimeStamp >= beginTimeStamp
-        //        //                                                                        && e.TimeStamp <= endTimeStamp, );
+                return updateResults;
+            }
+            catch (Exception exception)
+            {
+                throw (exception);
+            }
+        }
 
-
-        //        //            residenceCollection.UpdateMany(x =>
-        //        //x.City == "Stockholm",
-        //        //Builders<Residence>.Update.Set(p => p.Municipality, "Stoholms län"),
-        //        //new UpdateOptions { IsUpsert = false }
-        //        //);
-
-        //        //* Retornar valores coincidentes *//
-        //        //return await dataReadings.ToList();
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        throw (exception);
-        //    }
-        //}
+        public DeleteResult DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
+        {
+            try
+            {
+                //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
+                return this.GetAll().DeleteMany<DataReading>(e => e.Cups == cups
+                                                                        && e.TimeStamp >= beginTimeStamp
+                                                                        && e.TimeStamp <= endTimeStamp);
+            }
+            catch (Exception exception)
+            {
+                throw (exception);
+            }
+        }
     }
 }
