@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Inergy.ML.Data\Inergy.ML.Data.csproj" />
+    <ProjectReference Include="..\Inergy.ML.Model\Inergy.ML.Model.csproj" />
+  </ItemGroup>
+
+</Project>

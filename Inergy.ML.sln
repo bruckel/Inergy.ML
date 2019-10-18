@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inergy.ML.Data", "Inergy.ML.Data\Inergy.ML.Data.csproj", "{012305CB-E2AA-4F4A-B092-409CFA61FCA7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.- Data", "4.- Data", "{8E7C795A-0358-4EBC-8175-5B175A7FFFD0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.- Application", "1.- Application", "{7EA4ECF4-DCAE-4461-AC89-25EAC098F369}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.- Model", "3.- Model", "{FF98904D-DAE8-473C-89BC-FF2908646A93}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.- Service", "2.- Service", "{EF55F9DA-3583-4FC8-BC83-ACFE56D568DA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inergy.ML.Model", "Inergy.ML.Model\Inergy.ML.Model.csproj", "{DC278B06-215E-4823-B8BB-3BAF9565183E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inergy.ML.Cosmos.Application", "Inergy.ML.Cosmos.Console\Inergy.ML.Cosmos.Application.csproj", "{5F8F7C39-205C-4ABE-93C7-6831799C7B3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inergy.ML.Service", "Inergy.ML.Service\Inergy.ML.Service.csproj", "{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{012305CB-E2AA-4F4A-B092-409CFA61FCA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{012305CB-E2AA-4F4A-B092-409CFA61FCA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{012305CB-E2AA-4F4A-B092-409CFA61FCA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{012305CB-E2AA-4F4A-B092-409CFA61FCA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC278B06-215E-4823-B8BB-3BAF9565183E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC278B06-215E-4823-B8BB-3BAF9565183E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC278B06-215E-4823-B8BB-3BAF9565183E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC278B06-215E-4823-B8BB-3BAF9565183E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{012305CB-E2AA-4F4A-B092-409CFA61FCA7} = {8E7C795A-0358-4EBC-8175-5B175A7FFFD0}
+		{DC278B06-215E-4823-B8BB-3BAF9565183E} = {FF98904D-DAE8-473C-89BC-FF2908646A93}
+		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E} = {7EA4ECF4-DCAE-4461-AC89-25EAC098F369}
+		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7} = {EF55F9DA-3583-4FC8-BC83-ACFE56D568DA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF33C6EB-A892-47DA-B2CA-A1D642EEF1E5}
+	EndGlobalSection
+EndGlobal
