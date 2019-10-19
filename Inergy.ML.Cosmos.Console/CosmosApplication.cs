@@ -26,15 +26,14 @@ namespace Inergy.ML.Cosmos.Application
             })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddHostedService<CosmosService>();
-                //services.AddSingleton<DataReadingService, DataReadingService>(d => new DataReadingService(hostContext.Configuration.GetSection("MongoConnection:ConnectionString").Value, hostContext.Configuration.GetSection("MongoConnection:Database").Value));
+                services.AddHostedService<CosmosService>(d => new CosmosService(new DataReadingService(hostContext.Configuration.GetSection("MongoConnection:ConnectionString").Value, hostContext.Configuration.GetSection("MongoConnection:Database").Value)));
             })
             .ConfigureLogging((hostContext, configLogging) =>
             {
-                //configLogging.AddConsole();
-                //configLogging.AddDebug();
+                configLogging.AddConsole();
+                configLogging.AddDebug();
             })
-            //.UseSerilog()
+            .UseSerilog()
             .Build();
             
             host.StartAsync();

@@ -14,14 +14,48 @@ namespace Inergy.ML.Service.Cosmos
         private readonly IDataReadingRepository dataReadingRepository;
         private readonly ILogger log;
         
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="connectionString">Cadena de conexión</param>
+        /// <param name="database">Base de datos</param>
         public DataReadingService(string connectionString, string database) : this(new DataReadingRepository(new MongoContext(connectionString, database), "LoadCurves"))
         {
             this.log = new LoggerConfiguration().WriteTo.File("logs\\LoadCurvesLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
         }
 
+        /// <summary>
+        /// Cosntructor
+        /// </summary>
+        /// <param name="dataReadingRepository">Repositorio Mongo</param>
         public DataReadingService(IDataReadingRepository dataReadingRepository)
         {
             this.dataReadingRepository = dataReadingRepository;
+        }
+
+        /// <summary>
+        /// Obtener series temporales por intervalo de fecha
+        /// </summary>
+        /// <param name="cups">Identificador de cups</param>
+        /// <param name="beginTimeStamp">Fecha de inicio</param>
+        /// <param name="endTimeStamp">Fecha de fin</param>
+        /// <returns>Enumerable de series temporales</returns>
+        public IEnumerable<DataReading> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
+        {
+            try
+            {
+                return this.dataReadingRepository.GetDataReadings(cups, beginTimeStamp, endTimeStamp).Result.Select(r =>
+                {
+                    r.TimeStamp = r.TimeStamp.ToLocalTime();
+                    return r;
+                });
+            }
+            catch (Exception exception)
+            {
+                log.Error(exception, "Error while inserting data");
+
+                throw (exception);
+            }
         }
 
         /// <summary>
@@ -32,19 +66,26 @@ namespace Inergy.ML.Service.Cosmos
         {
             try
             {
+                //* Trabajamos por defecto con UTC *//
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
-                    BeginTimeStamp = data.Min(m => m.TimeStamp),
-                    EndTimeStamp = data.Max(m => m.TimeStamp),
-                    Data = data
+                    BeginTimeStamp = data.Min(m => m.TimeStamp).ToUniversalTime(),
+                    EndTimeStamp = data.Max(m => m.TimeStamp).ToUniversalTime(),
+                    Data = data.Select(f =>
+                    {
+                        //* Conversión obligatoria a UTC *//
+                        f.TimeStamp = f.TimeStamp.ToUniversalTime();
+                        return f;
+                    })
                 });
 
+                //* Procesar datos agrupado spor cups *//
                 groupedDataReading.AsParallel().ForAll(async g =>
                 {
                     var currentDataReadings = await this.dataReadingRepository.GetDataReadings(g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
 
-                    if (currentDataReadings.Any())
+                    if (!currentDataReadings.Any())
                     {
                         var result = await this.dataReadingRepository.InsertDataReadings(g.Data);
 
@@ -91,7 +132,12 @@ namespace Inergy.ML.Service.Cosmos
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
-                    Data = data
+                    Data = data.Select(f =>
+                    {
+                        //* Conversión obligatoria a UTC *//
+                        f.TimeStamp = f.TimeStamp.ToUniversalTime();
+                        return f;
+                    })
                 });
 
                 groupedDataReading.AsParallel().ForAll(async g =>
@@ -118,9 +164,9 @@ namespace Inergy.ML.Service.Cosmos
         {
             try
             {
-                var count = this.dataReadingRepository.DeleteDataReadings(cups, beginTimeStamp, endTimeStamp).Result.DeletedCount;
+                var count = this.dataReadingRepository.DeleteDataReadings(cups, beginTimeStamp.ToUniversalTime(), endTimeStamp.ToUniversalTime()).Result.DeletedCount;
 
-                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {Count}", cups, count);
+                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {Count}", cups, beginTimeStamp, endTimeStamp, count);
             }
             catch (Exception exception)
             {
@@ -140,8 +186,8 @@ namespace Inergy.ML.Service.Cosmos
             {
                 Cups = cups,
                 Count = count,
-                MatchedCount = result.Where(r => r.IsAcknowledged).Select(r => r.MatchedCount),
-                ModifiedCount = result.Where(r => r.IsAcknowledged).Select(r => r.ModifiedCount),
+                MatchedCount = result.Where(r => r.IsAcknowledged).Sum(r => r.MatchedCount),
+                ModifiedCount = result.Where(r => r.IsAcknowledged).Sum(r => r.ModifiedCount),
                 ErrorCount = result.Where(r => !r.IsAcknowledged).Count()
             };
 
