@@ -11,7 +11,7 @@ namespace Inergy.ML.Data
     {
         Task<IEnumerable<DataReading>> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
 
-        Task<bool> InsertDataReadings(IEnumerable<DataReading> dataReadings);
+        Task<bool> CreateDataReadings(IEnumerable<DataReading> dataReadings);
 
         Task<IEnumerable<UpdateResult>> UpdateDataReadings(IEnumerable<DataReading> dataReadings);
 

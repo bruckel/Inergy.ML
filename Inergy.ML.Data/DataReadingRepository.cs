@@ -51,7 +51,7 @@ namespace Inergy.ML.Data
         /// </summary>
         /// <param name="dataReadings">Lecturas</param>
         /// <returns>Resultado de la insercción</returns>
-        public async Task<bool> InsertDataReadings(IEnumerable<DataReading> dataReadings)
+        public async Task<bool> CreateDataReadings(IEnumerable<DataReading> dataReadings)
         {
             try
             {

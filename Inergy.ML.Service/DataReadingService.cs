@@ -21,7 +21,16 @@ namespace Inergy.ML.Service.Cosmos
         /// <param name="database">Base de datos</param>
         public DataReadingService(string connectionString, string database) : this(new DataReadingRepository(new MongoContext(connectionString, database), "LoadCurves"))
         {
-            this.log = new LoggerConfiguration().WriteTo.File("logs\\LoadCurvesLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
+
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="mongoSettings">Configuración de l aconexión mongo</param>
+        public DataReadingService(IMongoSettings mongoSettings) : this(new DataReadingRepository(new MongoContext(mongoSettings.ConnectionString, mongoSettings.DatabaseName), "LoadCurves"))
+        {
+
         }
 
         /// <summary>
@@ -31,6 +40,7 @@ namespace Inergy.ML.Service.Cosmos
         public DataReadingService(IDataReadingRepository dataReadingRepository)
         {
             this.dataReadingRepository = dataReadingRepository;
+            this.log = new LoggerConfiguration().WriteTo.File("logs\\LoadCurvesLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
         }
 
         /// <summary>
@@ -62,7 +72,7 @@ namespace Inergy.ML.Service.Cosmos
         /// Método para insertar series temporales
         /// </summary>
         /// <param name="dataReadings">Series temporales</param>
-        public void InsertDataReadings(IEnumerable<DataReading> dataReadings)
+        public void CreateDataReadings(IEnumerable<DataReading> dataReadings)
         {
             try
             {
@@ -87,7 +97,7 @@ namespace Inergy.ML.Service.Cosmos
 
                     if (!currentDataReadings.Any())
                     {
-                        var result = await this.dataReadingRepository.InsertDataReadings(g.Data);
+                        var result = await this.dataReadingRepository.CreateDataReadings(g.Data);
 
                         var logObject = new
                         {

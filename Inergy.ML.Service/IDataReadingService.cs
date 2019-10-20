@@ -8,7 +8,7 @@ namespace Inergy.ML.Service.Cosmos
     {
         IEnumerable<DataReading> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
 
-        void InsertDataReadings(IEnumerable<DataReading> dataReadings);
+        void CreateDataReadings(IEnumerable<DataReading> dataReadings);
 
         void UpdateDataReadings(IEnumerable<DataReading> dataReadings);
 
