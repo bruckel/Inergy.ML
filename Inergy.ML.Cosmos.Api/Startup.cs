@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Inergy.ML.Service.Cosmos;
 using Inergy.Tools.Architecture.Data.Mongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 namespace Imergy.ML.Cosmos.Api
 {
@@ -36,6 +30,9 @@ namespace Imergy.ML.Cosmos.Api
             services.AddSingleton<IDataReadingService, DataReadingService>();
 
             services.AddControllers();
+
+            //* Register the Swagger services
+            services.AddSwaggerDocument();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +46,11 @@ namespace Imergy.ML.Cosmos.Api
             {
                 app.UseExceptionHandler("/error");
             }
+
+            // Register the Swagger generator and the Swagger UI middlewares
+            app.UseOpenApi();
+
+            app.UseSwaggerUi3();
 
             app.UseHttpsRedirection();
 
