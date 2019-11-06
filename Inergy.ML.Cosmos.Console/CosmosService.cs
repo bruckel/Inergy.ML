@@ -1,12 +1,11 @@
+using Inergy.ML.Service.Cosmos;
+using Inergy.Tools.Architecture.Model;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Inergy.ML.Model;
-using Inergy.ML.Service.Cosmos;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 
 namespace Inergy.ML.Cosmos.Application
 {
@@ -35,7 +34,7 @@ namespace Inergy.ML.Cosmos.Application
             });
             
             //* Insertar registros */
-            //this.dataReadingService.InsertDataReadings(dataReadingList);
+            this.dataReadingService.CreateDataReadings(dataReadingList);
 
             //* Insertar registros */
             //this.dataReadingService.UpdateDataReadings(dataReadingList);
@@ -44,7 +43,7 @@ namespace Inergy.ML.Cosmos.Application
             //Console.WriteLine(this.dataReadingService.GetDataReadings("X12798739123123T", dataReadingList.Min(d => d.TimeStamp), dataReadingList.Max(d => d.TimeStamp)));
 
             //* Eliminar Registros *//
-            this.dataReadingService.DeleteDataReadings("X12798739123123T", dataReadingList.Min(d => d.TimeStamp), dataReadingList.Max(d => d.TimeStamp));
+            //this.dataReadingService.DeleteDataReadings("X12798739123123T", dataReadingList.Min(d => d.TimeStamp), dataReadingList.Max(d => d.TimeStamp));
             
             return Task.CompletedTask;
         }

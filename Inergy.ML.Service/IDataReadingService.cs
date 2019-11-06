@@ -1,4 +1,4 @@
-﻿using Inergy.ML.Model;
+﻿using Inergy.Tools.Architecture.Model;
 using System;
 using System.Collections.Generic;
 

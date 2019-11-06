@@ -1,5 +1,5 @@
-﻿using Inergy.ML.Model;
-using Inergy.Tools.Architecture.Data.Mongo;
+﻿using Inergy.Tools.Architecture.Data.Mongo;
+using Inergy.Tools.Architecture.Model;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;

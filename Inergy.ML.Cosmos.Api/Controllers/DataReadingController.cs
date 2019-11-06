@@ -1,5 +1,5 @@
-﻿using Inergy.ML.Model;
-using Inergy.ML.Service.Cosmos;
+﻿using Inergy.ML.Service.Cosmos;
+using Inergy.Tools.Architecture.Model;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;

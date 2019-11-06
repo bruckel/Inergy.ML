@@ -1,10 +1,10 @@
-﻿using Inergy.ML.Model;
-using Inergy.Tools.Architecture.Data.Mongo;
+﻿using Inergy.Tools.Architecture.Data.Mongo;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Inergy.Tools.Architecture.Model;
 
 namespace Inergy.ML.Data
 {
@@ -14,8 +14,7 @@ namespace Inergy.ML.Data
         /// Constructor
         /// </summary>
         /// <param name="context">Contexto de la BB.DD. Mongo</param>
-        /// <param name="collectionName">Nombre de la colección</param>
-        public DataReadingRepository(IMongoContext context, string collectionName) : base(context, collectionName)
+        public DataReadingRepository(IMongoContext context) : base(context, "DataReadings")
         {
 
         }

@@ -1,6 +1,5 @@
 ﻿using Inergy.ML.Data;
-using Inergy.ML.Model;
-using Inergy.Tools.Architecture.Data.Mongo;
+using Inergy.Tools.Architecture.Model;
 using MongoDB.Driver;
 using Serilog;
 using System;
@@ -13,34 +12,16 @@ namespace Inergy.ML.Service.Cosmos
     {
         private readonly IDataReadingRepository dataReadingRepository;
         private readonly ILogger log;
-        
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="connectionString">Cadena de conexión</param>
-        /// <param name="database">Base de datos</param>
-        public DataReadingService(string connectionString, string database) : this(new DataReadingRepository(new MongoContext(connectionString, database), "LoadCurves"))
-        {
-
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="mongoSettings">Configuración de l aconexión mongo</param>
-        public DataReadingService(IMongoSettings mongoSettings) : this(new DataReadingRepository(new MongoContext(mongoSettings.ConnectionString, mongoSettings.DatabaseName), "LoadCurves"))
-        {
-
-        }
 
         /// <summary>
         /// Cosntructor
         /// </summary>
         /// <param name="dataReadingRepository">Repositorio Mongo</param>
-        public DataReadingService(IDataReadingRepository dataReadingRepository)
+        /// <param name="log">Servicio de Logging</param>
+        public DataReadingService(IDataReadingRepository dataReadingRepository, ILogger log)
         {
             this.dataReadingRepository = dataReadingRepository;
-            this.log = new LoggerConfiguration().WriteTo.File("logs\\LoadCurvesLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
+            this.log = log;
         }
 
         /// <summary>

@@ -6,29 +6,32 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Serilog;
 
 namespace Imergy.ML.Cosmos.Api
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
+        public IConfiguration configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.configuration = configuration;
         }
         
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
-            services.Configure<MongoSettings>(Configuration.GetSection(nameof(MongoSettings)));
-            services.AddSingleton<IMongoSettings>(s => s.GetRequiredService<IOptions<MongoSettings>>().Value);
+            services.Configure<MongoSettings>(configuration.GetSection(nameof(MongoSettings)));
+            services.AddSingleton<IMongoContext>(s => new MongoContext(s.GetRequiredService<IOptions<MongoSettings>>().Value.ConnectionString, s.GetRequiredService<IOptions<MongoSettings>>().Value.DatabaseName));
 
-            //* Inyección de dependenias del servicio *//
+            //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
+            services.AddSingleton<ILogger>(l => new LoggerConfiguration().ReadFrom.Configuration(this.configuration.GetSection("SerilogSettings")).CreateLogger());
+
+            //* Inyección de dependencias del servicio *//
             services.AddSingleton<IDataReadingService, DataReadingService>();
-
+            
             services.AddControllers();
 
             //* Register the Swagger services
