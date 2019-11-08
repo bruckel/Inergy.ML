@@ -19,33 +19,62 @@ namespace Imergy.ML.Cosmos.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd)
+        public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
         {
-            return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd).ToList();
+            try
+            {
+                return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd, timeZone).ToList();
+            }
+            catch
+            {
+                return this.Problem("Error");
+            }
+            
         }
 
         [HttpPost]
-        public IActionResult Create(IEnumerable<DataReading> dataReadings)
+        public IActionResult Create(IEnumerable<DataReading> dataReadings, string timeZone = "Europe/Madrid")
         {
-            this.dataReadingService.CreateDataReadings(dataReadings);
+            try
+            {
+                this.dataReadingService.CreateDataReadings(dataReadings, timeZone);
 
-            return NoContent();
+                return this.Content("Success");
+            }
+            catch
+            {
+                return this.Problem("Error");
+            }
         }
 
         [HttpPut]
-        public IActionResult Update(IEnumerable<DataReading> dataReadings)
+        public IActionResult Update(IEnumerable<DataReading> dataReadings, string timeZone = "Europe/Madrid")
         {
-            this.dataReadingService.UpdateDataReadings(dataReadings);
+            try
+            {
+                this.dataReadingService.UpdateDataReadings(dataReadings, timeZone);
 
-            return NoContent();
+                return this.Content("Success");
+            }
+            catch
+            {
+                return this.Problem("Error");
+            }
         }
 
         [HttpDelete]
-        public IActionResult Delete(string cups, DateTime dateBegin, DateTime dateEnd)
+        public IActionResult Delete(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
         {
-            this.dataReadingService.DeleteDataReadings(cups, dateBegin, dateEnd);
+            try
+            {
+                this.dataReadingService.DeleteDataReadings(cups, dateBegin, dateEnd, timeZone);
 
-            return NoContent();
+                return this.Content("Success");
+            }
+            catch
+            {
+                return this.Problem("Error");
+            }
         }
     }
 }

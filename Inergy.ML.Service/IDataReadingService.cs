@@ -6,12 +6,12 @@ namespace Inergy.ML.Service.Cosmos
 {
     public interface IDataReadingService
     {
-        IEnumerable<DataReading> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
+        IEnumerable<DataReading> GetDataReadings(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone);
 
-        void CreateDataReadings(IEnumerable<DataReading> dataReadings);
+        void CreateDataReadings(IEnumerable<DataReading> dataReadings, string timeZone);
 
-        void UpdateDataReadings(IEnumerable<DataReading> dataReadings);
+        void UpdateDataReadings(IEnumerable<DataReading> dataReadings, string timeZone);
 
-        void DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
+        void DeleteDataReadings(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone);
     }
 }

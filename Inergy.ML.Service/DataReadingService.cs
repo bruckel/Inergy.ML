@@ -5,6 +5,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inergy.Tools.Utils.Extension;
 
 namespace Inergy.ML.Service.Cosmos
 {
@@ -28,16 +29,22 @@ namespace Inergy.ML.Service.Cosmos
         /// Obtener series temporales por intervalo de fecha
         /// </summary>
         /// <param name="cups">Identificador de cups</param>
-        /// <param name="beginTimeStamp">Fecha de inicio</param>
-        /// <param name="endTimeStamp">Fecha de fin</param>
+        /// <param name="dateBegin">Fecha de inicio</param>
+        /// <param name="dateEnd">Fecha de fin</param>
+        /// <param name="timeZone">Zona horaria</param>
         /// <returns>Enumerable de series temporales</returns>
-        public IEnumerable<DataReading> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
+        public IEnumerable<DataReading> GetDataReadings(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone)
         {
             try
             {
-                return this.dataReadingRepository.GetDataReadings(cups, beginTimeStamp, endTimeStamp).Result.Select(r =>
+                //* Convertir fechas a UTC para la consulta en Cosmos DB *//
+                var utcDateBegin = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateBegin, DateTimeKind.Unspecified), timeZone);
+                var utcDateEnd = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateEnd, DateTimeKind.Unspecified), timeZone);
+
+                return this.dataReadingRepository.GetDataReadings(cups, utcDateBegin, utcDateEnd).Result.Select(r =>
                 {
-                    r.TimeStamp = r.TimeStamp.ToLocalTime();
+                    //* Convertir hora Utc en la hora local especificada en su momento por su offset *//
+                    r.TimeStamp = NodaDateTime.GetOffsetDateTime(r.TimeStamp, r.TimeOffset);
                     return r;
                 });
             }
@@ -53,7 +60,8 @@ namespace Inergy.ML.Service.Cosmos
         /// Método para insertar series temporales
         /// </summary>
         /// <param name="dataReadings">Series temporales</param>
-        public void CreateDataReadings(IEnumerable<DataReading> dataReadings)
+        /// <param name="timeZone">Zona horaria</param>
+        public void CreateDataReadings(IEnumerable<DataReading> dataReadings, string timeZone)
         {
             try
             {
@@ -61,12 +69,13 @@ namespace Inergy.ML.Service.Cosmos
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
-                    BeginTimeStamp = data.Min(m => m.TimeStamp).ToUniversalTime(),
-                    EndTimeStamp = data.Max(m => m.TimeStamp).ToUniversalTime(),
+                    BeginTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Min(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
+                    EndTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
-                        f.TimeStamp = f.TimeStamp.ToUniversalTime();
+                        f.TimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
+                        f.TimeOffset = NodaDateTime.GetUtcOffset(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
                         return f;
                     })
                 });
@@ -116,7 +125,8 @@ namespace Inergy.ML.Service.Cosmos
         /// Método para actualizar las series temporales
         /// </summary>
         /// <param name="dataReadings">Colección de series temporales</param>
-        public void UpdateDataReadings(IEnumerable<DataReading> dataReadings)
+        /// <param name="timeZone">Zona horaria</param>
+        public void UpdateDataReadings(IEnumerable<DataReading> dataReadings, string timeZone)
         {
             try
             {
@@ -126,7 +136,8 @@ namespace Inergy.ML.Service.Cosmos
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
-                        f.TimeStamp = f.TimeStamp.ToUniversalTime();
+                        f.TimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone);
+                        f.TimeOffset = NodaDateTime.GetUtcOffset(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
                         return f;
                     })
                 });
@@ -141,6 +152,8 @@ namespace Inergy.ML.Service.Cosmos
             }
             catch (Exception exception)
             {
+                log.Error(exception, "Error while updating data");
+
                 throw (exception);
             }
         }
@@ -149,18 +162,25 @@ namespace Inergy.ML.Service.Cosmos
         /// Método para la eliminación de series teporales por cups e intervalo
         /// </summary>
         /// <param name="cups">Identificador cups</param>
-        /// <param name="beginTimeStamp">Fecha/hora de inicio</param>
-        /// <param name="endTimeStamp">Fech /hora de fin</param>
-        public void DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
+        /// <param name="dateBegin">Fecha de inicio</param>
+        /// <param name="dateEnd">Fecha de fin</param>
+        /// <param name="timeZone">Zona horaria</param>
+        public void DeleteDataReadings(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone)
         {
             try
             {
-                var count = this.dataReadingRepository.DeleteDataReadings(cups, beginTimeStamp.ToUniversalTime(), endTimeStamp.ToUniversalTime()).Result.DeletedCount;
+                //* Convertir fechas a UTC para la consulta en Cosmos DB *//
+                var utcDateBegin = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateBegin, DateTimeKind.Unspecified), timeZone);
+                var utcDateEnd = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateEnd, DateTimeKind.Unspecified), timeZone);
 
-                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {Count}", cups, beginTimeStamp, endTimeStamp, count);
+                var count = this.dataReadingRepository.DeleteDataReadings(cups, utcDateBegin, utcDateEnd).Result.DeletedCount;
+
+                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {Count}", cups, dateBegin, dateEnd, count);
             }
             catch (Exception exception)
             {
+                log.Error(exception, "Error while deleting data");
+
                 throw (exception);
             }
         }

@@ -34,7 +34,7 @@ namespace Inergy.ML.Cosmos.Application
             });
             
             //* Insertar registros */
-            this.dataReadingService.CreateDataReadings(dataReadingList);
+            this.dataReadingService.CreateDataReadings(dataReadingList, "Europe/Madrid");
 
             //* Insertar registros */
             //this.dataReadingService.UpdateDataReadings(dataReadingList);
