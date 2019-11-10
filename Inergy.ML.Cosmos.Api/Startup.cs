@@ -1,7 +1,10 @@
+using Inergy.Api.Web.Models;
 using Inergy.ML.Service.Cosmos;
 using Inergy.Tools.Architecture.Data.Mongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +25,10 @@ namespace Imergy.ML.Cosmos.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //* Context BB.DD. de la autentificación identity *//
+            //services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("Api")));
+            //services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
+
             //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
             services.Configure<MongoSettings>(configuration.GetSection(nameof(MongoSettings)));
             services.AddSingleton<IMongoContext>(s => new MongoContext(s.GetRequiredService<IOptions<MongoSettings>>().Value.ConnectionString, s.GetRequiredService<IOptions<MongoSettings>>().Value.DatabaseName));

@@ -1,4 +1,5 @@
-﻿using Inergy.ML.Service.Cosmos;
+﻿using Inergy.ML.Data;
+using Inergy.ML.Service.Cosmos;
 using Inergy.Tools.Architecture.Data.Mongo;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,21 +28,25 @@ namespace Inergy.ML.Cosmos.Application
             })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddHostedService<CosmosService>();
-
                 //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
                 services.Configure<MongoSettings>(hostContext.Configuration.GetSection(nameof(MongoSettings)));
                 services.AddSingleton<IMongoContext>(s => new MongoContext(s.GetRequiredService<IOptions<MongoSettings>>().Value.ConnectionString, s.GetRequiredService<IOptions<MongoSettings>>().Value.DatabaseName));
-                
+
+                //* Inyección de dependencias del servicio *//
+                services.AddSingleton<IDataReadingRepository, DataReadingRepository>();
+
                 //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
                 services.AddSingleton<ILogger>(l => new LoggerConfiguration().ReadFrom.Configuration(hostContext.Configuration.GetSection("SerilogSettings")).CreateLogger());
 
                 //* Inyección de dependencias del servicio *//
                 services.AddSingleton<IDataReadingService, DataReadingService>();
+
+
+                services.AddHostedService<CosmosService>();
             })
             .UseSerilog()
             .Build();
-            
+
             host.StartAsync();
         }
     }
