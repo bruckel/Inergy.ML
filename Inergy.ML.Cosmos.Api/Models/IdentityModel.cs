@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inergy.Api.Web.Models
+namespace Inergy.ML.Cosmos.Api.Models
 {
     /// <summary>
     /// Usuario Identity

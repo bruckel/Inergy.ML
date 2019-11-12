@@ -1,5 +1,6 @@
 ﻿using Inergy.ML.Service.Cosmos;
 using Inergy.Tools.Architecture.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ namespace Imergy.ML.Cosmos.Api.Controllers
 {
     [ApiController]
     [Route("api/data_readings")]
+    [Authorize]
     public class DataReadingController : ControllerBase
     {
         private readonly IDataReadingService dataReadingService;
@@ -19,11 +21,11 @@ namespace Imergy.ML.Cosmos.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
+        public ActionResult<IEnumerable<DataReading>> Get()
         {
             try
             {
-                return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd, timeZone).ToList();
+                return this.Content("Hola Mundo");
             }
             catch
             {
@@ -31,6 +33,20 @@ namespace Imergy.ML.Cosmos.Api.Controllers
             }
             
         }
+
+        //[HttpGet]
+        //public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
+        //{
+        //    try
+        //    {
+        //        return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd, timeZone).ToList();
+        //    }
+        //    catch
+        //    {
+        //        return this.Problem("Error");
+        //    }
+
+        //}
 
         [HttpPost]
         public IActionResult Create(IEnumerable<DataReading> dataReadings, string timeZone = "Europe/Madrid")

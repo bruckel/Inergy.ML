@@ -32,7 +32,7 @@ namespace Inergy.ML.Cosmos.Application
                 services.Configure<MongoSettings>(hostContext.Configuration.GetSection(nameof(MongoSettings)));
                 services.AddSingleton<IMongoContext>(s => new MongoContext(s.GetRequiredService<IOptions<MongoSettings>>().Value.ConnectionString, s.GetRequiredService<IOptions<MongoSettings>>().Value.DatabaseName));
 
-                //* Inyección de dependencias del servicio *//
+                //* Inyección de dependencias del repositorio *//
                 services.AddSingleton<IDataReadingRepository, DataReadingRepository>();
 
                 //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
