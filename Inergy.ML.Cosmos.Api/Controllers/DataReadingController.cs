@@ -23,15 +23,24 @@ namespace Imergy.ML.Cosmos.Api.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<DataReading>> Get()
         {
-            try
-            {
-                return this.Content("Hola Mundo");
-            }
-            catch
-            {
-                return this.Problem("Error");
-            }
-            
+            //try
+            //{
+            //    return Enumerable.Range(0, 24).Select(i => new DataReading
+            //    {
+            //        Cups = "X12798739123123T",
+            //        IdEnergySource = 0,
+            //        Type = 0,
+            //        TimeStamp = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, i, 0, 0),
+            //        Unit = "kWh",
+            //        Value = 34
+            //    }).ToList();
+            //}
+            //catch
+            //{
+            //    return this.Problem("Error");
+            //}
+
+            return this.Problem("Error");
         }
 
         //[HttpGet]

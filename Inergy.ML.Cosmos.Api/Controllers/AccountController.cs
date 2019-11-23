@@ -16,9 +16,7 @@ namespace Inergy.ML.Cosmos.Api.Controllers
     /// <summary>
     /// Controlador de autorización y autentificación de la web api
     /// </summary>
-    //[Route("api/account")]
     [ApiController]
-    //[Authorize]
     public class AccountController : Controller
     {
         /// <summary>
