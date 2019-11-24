@@ -19,44 +19,34 @@ namespace Imergy.ML.Cosmos.Api.Controllers
         {
             this.dataReadingService = dataReadingService;
         }
-
+        
+        /// <summary>
+        /// Método Get: obtener datos de series temporales
+        /// </summary>
+        /// <param name="cups">Cups o identificador</param>
+        /// <param name="dateBegin">Fecha de inicio</param>
+        /// <param name="dateEnd">fecha de fin</param>
+        /// <param name="timeZone">Zona horaria</param>
+        /// <returns>Enumerable de objetos de series temporales</returns>
         [HttpGet]
-        public ActionResult<IEnumerable<DataReading>> Get()
+        public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
         {
-            //try
-            //{
-            //    return Enumerable.Range(0, 24).Select(i => new DataReading
-            //    {
-            //        Cups = "X12798739123123T",
-            //        IdEnergySource = 0,
-            //        Type = 0,
-            //        TimeStamp = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, i, 0, 0),
-            //        Unit = "kWh",
-            //        Value = 34
-            //    }).ToList();
-            //}
-            //catch
-            //{
-            //    return this.Problem("Error");
-            //}
-
-            return this.Problem("Error");
+            try
+            {
+                return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd, timeZone).ToList();
+            }
+            catch (Exception exception)
+            {
+                return this.Problem(exception.Message);
+            }
         }
 
-        //[HttpGet]
-        //public ActionResult<IEnumerable<DataReading>> Get(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
-        //{
-        //    try
-        //    {
-        //        return this.dataReadingService.GetDataReadings(cups, dateBegin, dateEnd, timeZone).ToList();
-        //    }
-        //    catch
-        //    {
-        //        return this.Problem("Error");
-        //    }
-
-        //}
-
+        /// <summary>
+        /// Método Create: insertar series temporales
+        /// </summary>
+        /// <param name="dataReadings">Lista de series temporales</param>
+        /// <param name="timeZone">Zona horaria</param>
+        /// <returns>Lista de series temporales insertados</returns>
         [HttpPost]
         public IActionResult Create(IEnumerable<DataReading> dataReadings, string timeZone = "Europe/Madrid")
         {
@@ -64,14 +54,20 @@ namespace Imergy.ML.Cosmos.Api.Controllers
             {
                 this.dataReadingService.CreateDataReadings(dataReadings, timeZone);
 
-                return this.Content("Success");
+                return this.Ok(dataReadings);
             }
-            catch
+            catch (Exception exception)
             {
-                return this.Problem("Error");
+                return this.Problem(exception.Message);
             }
         }
 
+        /// <summary>
+        /// Método Put: actualizar series tenporales
+        /// </summary>
+        /// <param name="dataReadings">Lista de series temporales</param>
+        /// <param name="timeZone">Zona horaria</param>
+        /// <returns>Lista de series temporales actualizados</returns>
         [HttpPut]
         public IActionResult Update(IEnumerable<DataReading> dataReadings, string timeZone = "Europe/Madrid")
         {
@@ -79,14 +75,22 @@ namespace Imergy.ML.Cosmos.Api.Controllers
             {
                 this.dataReadingService.UpdateDataReadings(dataReadings, timeZone);
 
-                return this.Content("Success");
+                return this.Ok(dataReadings);
             }
-            catch
+            catch (Exception exception)
             {
-                return this.Problem("Error");
+                return this.Problem(exception.Message);
             }
         }
 
+        /// <summary>
+        /// Método Delete: eliminar series temporales
+        /// </summary>
+        /// <param name="cups">Cups o identificador</param>
+        /// <param name="dateBegin">Fecha de inicio</param>
+        /// <param name="dateEnd">fecha de fin</param>
+        /// <param name="timeZone">Zona horaria</param>
+        /// <returns>Response Ok</returns>
         [HttpDelete]
         public IActionResult Delete(string cups, DateTime dateBegin, DateTime dateEnd, string timeZone = "Europe/Madrid")
         {
@@ -94,11 +98,11 @@ namespace Imergy.ML.Cosmos.Api.Controllers
             {
                 this.dataReadingService.DeleteDataReadings(cups, dateBegin, dateEnd, timeZone);
 
-                return this.Content("Success");
+                return this.Ok();
             }
-            catch
+            catch (Exception exception)
             {
-                return this.Problem("Error");
+                return this.Problem(exception.Message);
             }
         }
     }

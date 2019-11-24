@@ -89,7 +89,7 @@ namespace Inergy.ML.Service.Cosmos
                     {
                         var result = await this.dataReadingRepository.CreateDataReadings(g.Data);
 
-                        var logObject = new
+                        var logObject = new 
                         {
                             g.Cups,
                             Count = g.Data.Count()
