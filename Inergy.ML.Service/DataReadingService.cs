@@ -83,13 +83,24 @@ namespace Inergy.ML.Service.Cosmos
                 //* Procesar datos agrupado spor cups *//
                 groupedDataReading.AsParallel().ForAll(async g =>
                 {
+                    bool status = true;
                     var currentDataReadings = await this.dataReadingRepository.GetDataReadings(g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
 
-                    if (!currentDataReadings.Any())
+                    if (currentDataReadings.Any())
+                    {
+                        var deleteResult = await this.dataReadingRepository.DeleteDataReadings(g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
+
+                        //* Si no se elimina correctamente, abortamos la creación de los datos *//
+                        status = deleteResult.IsAcknowledged;
+
+                        LogDeleteDataReadings(deleteResult, g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
+                    }
+
+                    if (status)
                     {
                         var result = await this.dataReadingRepository.CreateDataReadings(g.Data);
 
-                        var logObject = new 
+                        var logObject = new
                         {
                             g.Cups,
                             Count = g.Data.Count()
@@ -103,13 +114,6 @@ namespace Inergy.ML.Service.Cosmos
                         {
                             log.Warning("{Cups} - Total data not inserted: {Count}", logObject.Cups, logObject.Count);
                         }
-                    }
-                    else
-                    {
-                        var result = await this.dataReadingRepository.UpdateDataReadings(g.Data);
-
-                        //* Logging de los resultados de la actualización *//
-                        LogUpdateDataReadings(result, g.Cups, g.Data.Count());
                     }
                 });
             }
@@ -133,6 +137,8 @@ namespace Inergy.ML.Service.Cosmos
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
+                    BeginTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Min(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
+                    EndTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
@@ -144,10 +150,33 @@ namespace Inergy.ML.Service.Cosmos
 
                 groupedDataReading.AsParallel().ForAll(async g =>
                 {
-                    var result = await this.dataReadingRepository.UpdateDataReadings(g.Data);
+                    bool status = true;
+                    var deleteResult = await this.dataReadingRepository.DeleteDataReadings(g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
 
-                    //* Logging de los resultados de la actualización *//
-                    LogUpdateDataReadings(result, g.Cups, g.Data.Count());
+                    //* Si no se elimina correctamente, abortamos la creación de los datos *//
+                    status = deleteResult.IsAcknowledged;
+
+                    LogDeleteDataReadings(deleteResult, g.Cups, g.BeginTimeStamp, g.EndTimeStamp);
+
+                    if (status)
+                    {
+                        var result = await this.dataReadingRepository.CreateDataReadings(g.Data);
+
+                        var logObject = new
+                        {
+                            g.Cups,
+                            Count = g.Data.Count()
+                        };
+
+                        if (result)
+                        {
+                            log.Information("{Cups} - Total data inserted: {Count}", logObject.Cups, logObject.Count);
+                        }
+                        else
+                        {
+                            log.Warning("{Cups} - Total data not inserted: {Count}", logObject.Cups, logObject.Count);
+                        }
+                    }
                 });
             }
             catch (Exception exception)
@@ -173,9 +202,9 @@ namespace Inergy.ML.Service.Cosmos
                 var utcDateBegin = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateBegin, DateTimeKind.Unspecified), timeZone);
                 var utcDateEnd = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateEnd, DateTimeKind.Unspecified), timeZone);
 
-                var count = this.dataReadingRepository.DeleteDataReadings(cups, utcDateBegin, utcDateEnd).Result.DeletedCount;
+                var deleteResult = this.dataReadingRepository.DeleteDataReadings(cups, utcDateBegin, utcDateEnd).Result;
 
-                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {Count}", cups, dateBegin, dateEnd, count);
+                LogDeleteDataReadings(deleteResult, cups, dateBegin, dateEnd);
             }
             catch (Exception exception)
             {
@@ -186,30 +215,22 @@ namespace Inergy.ML.Service.Cosmos
         }
 
         /// <summary>
-        /// Método para el logggin de los resultados de la actualización de datos temporales
+        /// Método para el log de los resultados de la actualización de datos temporales
         /// </summary>
         /// <param name="result">Objeto resultado Mongo</param>
         /// <param name="cups">identificador cups</param>
         /// <param name="count">Número de registros a actualizar</param>
-        private void LogUpdateDataReadings(IEnumerable<UpdateResult> result, string cups, int count)
+        private void LogDeleteDataReadings(DeleteResult result, string cups, DateTime dateBegin, DateTime dateEnd)
         {
-            var logObject = new
-            {
-                Cups = cups,
-                Count = count,
-                MatchedCount = result.Where(r => r.IsAcknowledged).Sum(r => r.MatchedCount),
-                ModifiedCount = result.Where(r => r.IsAcknowledged).Sum(r => r.ModifiedCount),
-                ErrorCount = result.Where(r => !r.IsAcknowledged).Count()
-            };
-
-            //* Registro de datos temporales actualizados correctamente *//
-            log.Information("{Cups} - Total data: {Count}, total matched: {MatchedCount} and total modified {ModifiedCount}",
-                            logObject.Cups, logObject.Count, logObject.MatchedCount, logObject.ModifiedCount);
-
             //* Registro de datos no actualizdos correctamente *//
-            if (result.Where(r => !r.IsAcknowledged).Any())
+            if (!result.IsAcknowledged)
             {
-                log.Warning("{Cups} - Total data not updated: {ErrorCount}", logObject.Cups, logObject.ErrorCount);
+                log.Warning("{Cups} - Total data not deleted: {DeletedCount}", cups, result.DeletedCount);
+            }
+            else
+            {
+                //* Registro de datos temporales actualizados correctamente *//
+                log.Information("{Cups} - Total data deleted between {beginTimeStamp} and {endTimeStamp}: {DeletedCount}", cups, dateBegin, dateEnd, result.DeletedCount);
             }
         }
     }

@@ -101,7 +101,7 @@ namespace Inergy.ML.Cosmos.Api.Controllers
 
                     if (!userResult.Succeeded || !roleResult.Succeeded || !claimResult.Succeeded)
                     {
-                        throw new InvalidOperationException("Failed to build user and roles");
+                        log.Error("Failed to build user and roles");
                     }
                 }
             }

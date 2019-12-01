@@ -3,14 +3,14 @@ using Inergy.Tools.Architecture.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;          
+using System.Linq; 
 
 namespace Imergy.ML.Cosmos.Api.Controllers
 {
     [ApiController]
     [Route("api/data_readings")]
-    [Authorize]
+    //[Authorize]
     public class DataReadingController : ControllerBase
     {
         private readonly IDataReadingService dataReadingService;
@@ -19,7 +19,7 @@ namespace Imergy.ML.Cosmos.Api.Controllers
         {
             this.dataReadingService = dataReadingService;
         }
-        
+
         /// <summary>
         /// Método Get: obtener datos de series temporales
         /// </summary>

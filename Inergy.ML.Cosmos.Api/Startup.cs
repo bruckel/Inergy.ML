@@ -30,8 +30,6 @@ namespace Imergy.ML.Cosmos.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var temp = configuration.GetConnectionString("Api");
-
             //* Context BB.DD. de la autentificación identity *//
             services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("Api")));
             services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
@@ -44,7 +42,7 @@ namespace Imergy.ML.Cosmos.Api
             services.AddSingleton<IDataReadingRepository, DataReadingRepository>();
 
             //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
-            services.AddSingleton<ILogger>(l => new LoggerConfiguration().ReadFrom.Configuration(this.configuration.GetSection("Serilog")).CreateLogger());
+            services.AddSingleton<ILogger>(l => new LoggerConfiguration().ReadFrom.Configuration(this.configuration).CreateLogger());
 
             //* Inyección de dependencias del servicio *//
             services.AddSingleton<IDataReadingService, DataReadingService>();
@@ -87,6 +85,8 @@ namespace Imergy.ML.Cosmos.Api
             {
                 app.UseExceptionHandler("/error");
             }
+            
+            
 
             // Register the Swagger generator and the Swagger UI middlewares
             app.UseOpenApi();

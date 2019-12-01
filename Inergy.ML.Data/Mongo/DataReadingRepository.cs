@@ -67,30 +67,41 @@ namespace Inergy.ML.Data
         /// </summary>
         /// <param name="dataReadings">lecturas</param>
         /// <returns>Resultado de la actualización</returns>
-        public async Task<IEnumerable<UpdateResult>> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
-        {
-            try
-            {
-                List<UpdateResult> updateResults = new List<UpdateResult>();
+        //public async Task<IEnumerable<UpdateResult>> UpdateDataReadings(IEnumerable<DataReading> dataReadings)
+        //{
+        //    try
+        //    {
+        //        List<UpdateResult> updateResults = new List<UpdateResult>();
 
-                //* Actualizar valores, y si no existe, insertar *//
-                dataReadings.AsParallel().ForAll(async d =>
-                {
-                    //* Upsert indica que si el registro de lectura no existe se añade *//
-                    var updateResult = await this.GetAll().UpdateOneAsync<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp, 
-                                                                                        Builders<DataReading>.Update.Set(p => p.Value, d.Value), 
-                                                                                        new UpdateOptions { IsUpsert = true });
+        //        //* Actualizar valores, y si no existe, insertar *//
+        //        dataReadings.ToList().ForEach(async d =>
+        //        {
+        //            //* Upsert indica que si el registro de lectura no existe se añade *//
+        //            var updateResult = await this.GetAll().UpdateManyAsync<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp, 
+        //                                                                                Builders<DataReading>.Update.Set(p => p.Value, d.Value), 
+        //                                                                                new UpdateOptions { IsUpsert = true });
 
-                    updateResults.Add(updateResult);
-                });
+        //            updateResults.Add(updateResult);
+        //        });
 
-                return await Task.Run(() => updateResults);
-            }
-            catch (Exception exception)
-            {
-                throw (exception);
-            }
-        }
+
+        //        //dataReadings.AsParallel().ForAll(async d =>
+        //        //{
+        //        //    //* Upsert indica que si el registro de lectura no existe se añade *//
+        //        //    var updateResult = await this.GetAll().UpdateOneAsync<DataReading>(r => r.Cups == d.Cups && r.TimeStamp == d.TimeStamp,
+        //        //                                                                        Builders<DataReading>.Update.Set(p => p.Value, d.Value),
+        //        //                                                                        new UpdateOptions { IsUpsert = true });
+
+        //        //    updateResults.Add(updateResult);
+        //        //});
+
+        //        return await Task.Run(() => updateResults);
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        throw (exception);
+        //    }
+        //}
 
         /// <summary>
         /// Eliminar lecturas en función de indentificador y rango de fechas
