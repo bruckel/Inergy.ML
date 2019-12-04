@@ -30,11 +30,12 @@ namespace Inergy.ML.Cosmos.Application
                 Type = 0,
                 TimeStamp = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, i, 0, 0),
                 Unit = "kWh",
-                Value = randomNumber.Next(255)
+                Value = randomNumber.Next(255),
+                Order = i + 1
             });
             
             //* Insertar registros */
-            //this.dataReadingService.CreateDataReadings(dataReadingList, "Europe/Madrid");
+            this.dataReadingService.CreateDataReadings(dataReadingList, "Europe/Madrid");
 
             //* Insertar registros */
             //this.dataReadingService.UpdateDataReadings(dataReadingList);

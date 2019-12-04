@@ -29,7 +29,7 @@ namespace Inergy.ML.Data
         public async Task<IEnumerable<DataReading>> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp)
         {
             try
-            {
+            { 
                 //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
                 var dataReadings = this.GetAll().Find<DataReading>(e => e.Cups == cups
                                                                         && e.TimeStamp >= beginTimeStamp

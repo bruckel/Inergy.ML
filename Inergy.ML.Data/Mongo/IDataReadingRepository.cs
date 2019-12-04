@@ -13,8 +13,6 @@ namespace Inergy.ML.Data
 
         Task<bool> CreateDataReadings(IEnumerable<DataReading> dataReadings);
 
-        //Task<IEnumerable<UpdateResult>> UpdateDataReadings(IEnumerable<DataReading> dataReadings);
-
         Task<DeleteResult> DeleteDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
     }
 }

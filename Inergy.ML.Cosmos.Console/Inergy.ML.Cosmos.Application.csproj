@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.3" />
+    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.4" />
     <PackageReference Include="Inergy.Tools.Utils" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />

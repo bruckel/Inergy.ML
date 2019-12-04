@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.3" />
+    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.4" />
     <PackageReference Include="Inergy.Tools.Utils" Version="1.0.1" />
     <PackageReference Include="Inergy.Tools.Utils.Extension" Version="1.0.4" />
     <PackageReference Include="Serilog" Version="2.9.0" />

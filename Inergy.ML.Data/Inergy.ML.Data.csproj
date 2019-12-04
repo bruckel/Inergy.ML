@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Inergy.Tools.Architecture.Data.Mongo" Version="1.0.2" />
-    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.3" />
+    <PackageReference Include="Inergy.Tools.Architecture.Model" Version="1.0.4" />
     <PackageReference Include="Inergy.Tools.Utils" Version="1.0.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
   </ItemGroup>
