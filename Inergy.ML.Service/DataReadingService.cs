@@ -74,7 +74,7 @@ namespace Inergy.ML.Service.Cosmos
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
-                        f.TimeStamp = f.TimeStamp.ToUniversalTime();
+                        f.TimeStamp = NodaDateTime.GetUnspecifiedDateTime(f.TimeStamp, timeZone);
                         f.TimeOffset = NodaDateTime.GetUtcOffset(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
                         return f;
                     })
