@@ -38,8 +38,8 @@ namespace Inergy.ML.Service.Cosmos
             try
             {
                 //* Convertir fechas a UTC para la consulta en Cosmos DB *//
-                var utcDateBegin = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateBegin, DateTimeKind.Unspecified), timeZone);
-                var utcDateEnd = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateEnd, DateTimeKind.Unspecified), timeZone);
+                var utcDateBegin = NodaDateTime.GetUnspecifiedDateTime(dateBegin, timeZone).ToUniversalTime();
+                var utcDateEnd = NodaDateTime.GetUnspecifiedDateTime(dateEnd, timeZone).ToUniversalTime();
 
                 return this.dataReadingRepository.GetDataReadings(cups, utcDateBegin, utcDateEnd).Result.Select(r =>
                 {
@@ -69,13 +69,14 @@ namespace Inergy.ML.Service.Cosmos
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
-                    BeginTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Min(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
-                    EndTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
+                    BeginTimeStamp = NodaDateTime.GetUnspecifiedDateTime(data.Min(m => m.TimeStamp), timeZone).ToUniversalTime(),
+                    EndTimeStamp = NodaDateTime.GetUnspecifiedDateTime(data.Max(m => m.TimeStamp), timeZone).ToUniversalTime(),
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
                         f.TimeStamp = NodaDateTime.GetUnspecifiedDateTime(f.TimeStamp, timeZone);
-                        f.TimeOffset = NodaDateTime.GetUtcOffset(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
+                        f.TimeOffset = NodaDateTime.GetUtcOffset(f.TimeStamp, timeZone);
+
                         return f;
                     })
                 });
@@ -137,13 +138,13 @@ namespace Inergy.ML.Service.Cosmos
                 var groupedDataReading = dataReadings.GroupBy(d => d.Cups, (cups, data) => new
                 {
                     Cups = cups,
-                    BeginTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Min(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
-                    EndTimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone),
+                    BeginTimeStamp = NodaDateTime.GetUnspecifiedDateTime(data.Min(m => m.TimeStamp), timeZone).ToUniversalTime(),
+                    EndTimeStamp = NodaDateTime.GetUnspecifiedDateTime(data.Max(m => m.TimeStamp), timeZone).ToUniversalTime(),
                     Data = data.Select(f =>
                     {
                         //* Conversión obligatoria a UTC *//
-                        f.TimeStamp = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(data.Max(m => m.TimeStamp), DateTimeKind.Unspecified), timeZone);
-                        f.TimeOffset = NodaDateTime.GetUtcOffset(DateTime.SpecifyKind(f.TimeStamp, DateTimeKind.Unspecified), timeZone);
+                        f.TimeStamp = NodaDateTime.GetUnspecifiedDateTime(data.Max(m => m.TimeStamp), timeZone);
+                        f.TimeOffset = NodaDateTime.GetUtcOffset(f.TimeStamp, timeZone);
                         return f;
                     })
                 });
@@ -199,8 +200,8 @@ namespace Inergy.ML.Service.Cosmos
             try
             {
                 //* Convertir fechas a UTC para la consulta en Cosmos DB *//
-                var utcDateBegin = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateBegin, DateTimeKind.Unspecified), timeZone);
-                var utcDateEnd = NodaDateTime.GetUtcDateTime(DateTime.SpecifyKind(dateEnd, DateTimeKind.Unspecified), timeZone);
+                var utcDateBegin = NodaDateTime.GetUnspecifiedDateTime(dateBegin, timeZone).ToUniversalTime();
+                var utcDateEnd = NodaDateTime.GetUnspecifiedDateTime(dateEnd, timeZone).ToUniversalTime();
 
                 var deleteResult = this.dataReadingRepository.DeleteDataReadings(cups, utcDateBegin, utcDateEnd).Result;
 
