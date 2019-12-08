@@ -10,7 +10,7 @@ namespace Imergy.ML.Cosmos.Api.Controllers
 {
     [ApiController]
     [Route("api/data_readings")]
-    //[Authorize]
+    [Authorize]
     public class DataReadingController : ControllerBase
     {
         private readonly IDataReadingService dataReadingService;
