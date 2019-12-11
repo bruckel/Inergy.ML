@@ -1,4 +1,4 @@
-﻿using Inergy.ML.Service.Cosmos;
+﻿using Inergy.ML.Service;
 using Inergy.Tools.Architecture.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

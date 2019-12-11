@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Inergy.ML.Service.Cosmos
+namespace Inergy.ML.Service
 {
     public interface IDataReadingService
     {

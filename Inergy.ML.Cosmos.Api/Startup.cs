@@ -1,6 +1,6 @@
 using Inergy.ML.Cosmos.Api.Models;
 using Inergy.ML.Data;
-using Inergy.ML.Service.Cosmos;
+using Inergy.ML.Service;
 using Inergy.Tools.Architecture.Data.Mongo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -13,7 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using System;
 using System.Text;
 
 namespace Imergy.ML.Cosmos.Api
@@ -86,8 +85,6 @@ namespace Imergy.ML.Cosmos.Api
                 app.UseExceptionHandler("/error");
             }
             
-            
-
             // Register the Swagger generator and the Swagger UI middlewares
             app.UseOpenApi();
 

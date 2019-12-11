@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inergy.ML.Service", "Inergy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inergy.ML.Cosmos.Api", "Inergy.ML.Cosmos.Api\Inergy.ML.Cosmos.Api.csproj", "{5FD4A16B-4F9C-4D00-8E1C-2D0D2FD51CAB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inergy.ML.Web", "Inergy.ML.Web\Inergy.ML.Web.csproj", "{1CA73D71-D442-40FA-B958-9791D91F1C1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{5FD4A16B-4F9C-4D00-8E1C-2D0D2FD51CAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FD4A16B-4F9C-4D00-8E1C-2D0D2FD51CAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FD4A16B-4F9C-4D00-8E1C-2D0D2FD51CAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CA73D71-D442-40FA-B958-9791D91F1C1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CA73D71-D442-40FA-B958-9791D91F1C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CA73D71-D442-40FA-B958-9791D91F1C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CA73D71-D442-40FA-B958-9791D91F1C1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,6 +63,7 @@ Global
 		{5F8F7C39-205C-4ABE-93C7-6831799C7B3E} = {7EA4ECF4-DCAE-4461-AC89-25EAC098F369}
 		{F38CB9A0-3200-42B9-B3A6-D61481BCD9F7} = {EF55F9DA-3583-4FC8-BC83-ACFE56D568DA}
 		{5FD4A16B-4F9C-4D00-8E1C-2D0D2FD51CAB} = {7EA4ECF4-DCAE-4461-AC89-25EAC098F369}
+		{1CA73D71-D442-40FA-B958-9791D91F1C1E} = {7EA4ECF4-DCAE-4461-AC89-25EAC098F369}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CF33C6EB-A892-47DA-B2CA-A1D642EEF1E5}

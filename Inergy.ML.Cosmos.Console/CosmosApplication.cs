@@ -1,6 +1,8 @@
 ﻿using Inergy.ML.Data;
-using Inergy.ML.Service.Cosmos;
+using Inergy.ML.Data.Entity;
+using Inergy.ML.Service;
 using Inergy.Tools.Architecture.Data.Mongo;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +30,8 @@ namespace Inergy.ML.Cosmos.Application
             })
             .ConfigureServices((hostContext, services) =>
             {
+                services.AddDbContext<ApiContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("Api")));
+
                 //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
                 services.Configure<MongoSettings>(hostContext.Configuration.GetSection(nameof(MongoSettings)));
                 services.AddSingleton<IMongoContext>(s => new MongoContext(s.GetRequiredService<IOptions<MongoSettings>>().Value.ConnectionString, s.GetRequiredService<IOptions<MongoSettings>>().Value.DatabaseName));
@@ -40,8 +44,7 @@ namespace Inergy.ML.Cosmos.Application
 
                 //* Inyección de dependencias del servicio *//
                 services.AddSingleton<IDataReadingService, DataReadingService>();
-
-
+                
                 services.AddHostedService<CosmosService>();
             })
             .UseSerilog()
