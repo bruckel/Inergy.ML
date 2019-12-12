@@ -120,7 +120,6 @@ namespace Inergy.ML.Service
 
         private void ForecastModel(IDataView testData, int horizon, TimeSeriesPredictionEngine<ModelInput, ModelOutput> forecaster)
         {
-
             ModelOutput forecast = forecaster.Predict();
 
             IEnumerable<string> forecastOutput = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, reuseRowObject: false)

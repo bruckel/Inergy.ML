@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Inergy.ML.Application</RootNamespace>
+    <AssemblyName>Inergy.ML.Application</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

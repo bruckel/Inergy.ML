@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System.IO;
 
-namespace Inergy.ML.Cosmos.Application
+namespace Inergy.ML.Application
 {
     class CosmosApplication
     {
