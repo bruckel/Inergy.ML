@@ -1,5 +1,62 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@using Inergy.ML.Service
+@using Inergy.ML.Model.ML
+@using Telerik.Blazor.Components.DropDownList
 
-Welcome to your new app.
+@inject IMLService mlService
+@inject IApiService apiService
+
+<TelerikDropDownList @ref="ddlCups" Data="@cups" ValueChanged="@((string cups) => OnChangeCups(cups))">
+</TelerikDropDownList>
+
+<br />
+<br />
+<p>@message</p>
+
+<TelerikChart @ref="chrData">
+    <ChartSeriesItems>
+        <ChartSeries Style="ChartSeriesStyle.Smooth" Type="ChartSeriesType.Area" Name="Real" Data="@data"
+                     Field="@nameof(ForecastOutput.ActualValue)" CategoryField="@nameof(ForecastOutput.Day)">
+        </ChartSeries>
+        <ChartSeries Style="ChartSeriesStyle.Smooth" Type="ChartSeriesType.Area" Name="Previsión" Data="@data"
+                     Field="@nameof(ForecastOutput.Estimate)">
+        </ChartSeries>
+    </ChartSeriesItems>
+</TelerikChart>
+
+@code {
+
+    private IEnumerable<ForecastOutput> data;
+    private IEnumerable<String> cups;
+    private string firstCups;
+    private string message;
+
+    TelerikDropDownList<string, string> ddlCups;
+    TelerikChart chrData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cups = apiService.GetCups();
+        firstCups = cups.FirstOrDefault();
+
+        data = await mlService.GetPredictedValues(firstCups, 30);
+
+        string beginDate = data.Min(d => d.Date).ToShortDateString();
+        string endDate = data.Max(d => d.Date).ToShortDateString();
+
+        message = $"Fecha de consulta entre el {beginDate} y el {endDate}";
+    }
+
+    private async void OnChangeCups(string cups)
+    {
+        data = await mlService.GetPredictedValues(cups, 30);
+
+        string beginDate = data.Min(d => d.Date).ToShortDateString();
+        string endDate = data.Max(d => d.Date).ToShortDateString();
+
+        message = $"Fecha de consulta entre el {beginDate} y el {endDate}";
+
+        StateHasChanged();
+    }
+}

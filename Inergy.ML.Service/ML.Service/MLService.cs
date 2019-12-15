@@ -10,6 +10,7 @@ using Microsoft.ML;
 using Inergy.ML.Model.ML;
 using Microsoft.ML.Transforms.TimeSeries;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Inergy.ML.Service
 {
@@ -31,63 +32,82 @@ namespace Inergy.ML.Service
             this.mlContext = mlContext;
         }
 
-        public void RunML(string cups, DateTime dateBegin, DateTime dateEnd)
+        public async Task<IEnumerable<ForecastOutput>> GetPredictedValues(string cups, int horizon)
         {
+            //string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../Inergy.ML.Models/ForecastBySsa"));
             string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../"));
-            string modelPath = Path.Combine(rootDir, "MLModel.zip");
+            string modelPath = Path.Combine(rootDir, $"{cups}_daily_timeSeriesSSA.zip");
 
-            var data = GetDataViews(cups, dateBegin, dateEnd);
+            //* Cargar el modelo en el caso de que ya exista *//
+            bool createModel = !File.Exists(modelPath);
 
-            var transformer = TrainModel(data.Item1);
+            var modelInputs = await GetDataView(cups);
 
-            EvaluateModel(data.Item2, transformer);
+            if (createModel)
+            {
+                //* Guardar métricas en el log de la aplicación *//
+                var metrics = TrainAndSaveModel(modelInputs, modelPath);
+            }
 
-            SaveModel(transformer, modelPath);
-
+            //* Realizar predicción en base al modelo *//
+            return PredictModel(modelInputs, horizon, modelPath);
         }
-
-        private (IDataView, IDataView) GetDataViews(string cups, DateTime dateBegin, DateTime dateEnd)
+        
+        public async Task<IEnumerable<ModelInput>> GetDataView(string cups)
         {
-            var result = this.dataReadingRepository.GetDataReadings(cups, dateBegin, dateEnd).Result;
+            //string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../Inergy.ML.Models"));
+
+            var result = await this.dataReadingRepository.GetDataReadings(cups);
 
             //* Agrupar consumo por días *//
-            var modelInputs = result.GroupBy(r => r.TimeStamp.DayOfYear).Select(r => new ModelInput
+            var modelInputs = result.GroupBy(r => r.TimeStamp.Date).Select(r => new ModelInput
             {
-                ConsumDate = r.Select(p => p.TimeStamp).FirstOrDefault(),
-                Year = r.Select(p => p.TimeStamp.Year).FirstOrDefault(),
+                ConsumDate = r.Select(p => p.TimeStamp.Date).FirstOrDefault(),
+                Periode = Convert.ToInt32(r.Select(p => String.Concat(p.TimeStamp.Year.ToString(), 
+                                                    p.TimeStamp.Month.ToString("D2"), 
+                                                    p.TimeStamp.Day.ToString("D2"))).FirstOrDefault()),
                 TotalConsum = (float) r.Sum(p => p.Value)
-            });
+            })
+            .OrderBy(r => r.ConsumDate);
 
-            var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
-            
-            IDataView firstYearData = mlContext.Data.FilterRowsByColumn(dataView, "Year", upperBound: dateBegin.Year);
-            IDataView secondYearData = mlContext.Data.FilterRowsByColumn(dataView, "Year", lowerBound: dateBegin.Year);
-
-            return (firstYearData, secondYearData);
+            return modelInputs;
         }
 
-        private ITransformer TrainModel(IDataView trainData)
+        public EvaluateMetrics TrainAndSaveModel(IEnumerable<ModelInput> modelInputs, string modelPath)
         {
+            var horizon = 31;
+            var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
+
+            var lastDate = modelInputs.Max(p => p.ConsumDate).AddDays(-(horizon-1)).Date;
+            var bound = modelInputs.Where(m => m.ConsumDate.Date == lastDate).Select(m => m.Periode).FirstOrDefault();
+
+            var trainData = mlContext.Data.FilterRowsByColumn(dataView, "Periode", upperBound: bound);
+            var testData = mlContext.Data.FilterRowsByColumn(dataView, "Periode", lowerBound: bound);
+
+            var uno = this.mlContext.Data.CreateEnumerable<ModelInput>(trainData, false);
+            var dos = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, false);
+
+            //* Número de días del conjunto de entrenamiento *//
+            var numSeriesDataPoints = mlContext.Data.CreateEnumerable<ModelInput>(trainData, reuseRowObject: true).Count();
+
             var forecastingPipeline = mlContext.Forecasting.ForecastBySsa(
                 outputColumnName: "ForecastedConsum",
                 inputColumnName: "TotalConsum",
                 windowSize: 7,
-                seriesLength: 30,
-                trainSize: 365,
-                horizon: 7,
-                confidenceLevel: 0.95f,
+                seriesLength: 31,
+                trainSize: numSeriesDataPoints, 
+                horizon: horizon,
+                confidenceLevel: 0.98f,
                 confidenceLowerBoundColumn: "LowerBoundConsum",
                 confidenceUpperBoundColumn: "UpperBoundConsum");
 
-            SsaForecastingTransformer forecaster = forecastingPipeline.Fit(trainData);
+            var forecastTransformer = forecastingPipeline.Fit(trainData);
 
-            return forecaster;
-        }
-
-        private void EvaluateModel(IDataView testData, ITransformer model)
-        {
+            var forecastEngine = forecastTransformer.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
+            forecastEngine.CheckPoint(mlContext, modelPath);
+            
             // Make predictions
-            IDataView predictions = model.Transform(testData);
+            IDataView predictions = forecastTransformer.Transform(testData);
 
             // Actual values
             IEnumerable<float> actual = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, true).Select(observed => observed.TotalConsum);
@@ -99,55 +119,41 @@ namespace Inergy.ML.Service
             var metrics = actual.Zip(forecast, (actualValue, forecastValue) => actualValue - forecastValue);
 
             // Get metric averages
-            var MAE = metrics.Average(error => Math.Abs(error)); // Mean Absolute Error
-            var RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2))); // Root Mean Squared Error
-
-            // Output metrics
-
-            //* Esto no debe de estar en un service *//
-
-            Console.WriteLine("Evaluation Metrics");
-            Console.WriteLine("---------------------");
-            Console.WriteLine($"Mean Absolute Error: {MAE:F3}");
-            Console.WriteLine($"Root Mean Squared Error: {RMSE:F3}\n");
-        }
-
-        private void SaveModel(ITransformer model, string modelPath)
-        {
-            var forecastEngine = model.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
-            forecastEngine.CheckPoint(mlContext, modelPath);
-        }
-
-        private void ForecastModel(IDataView testData, int horizon, TimeSeriesPredictionEngine<ModelInput, ModelOutput> forecaster)
-        {
-            ModelOutput forecast = forecaster.Predict();
-
-            IEnumerable<string> forecastOutput = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, reuseRowObject: false)
-                    .Take(horizon)
-                    .Select((ModelInput consum, int index) =>
-                    {
-                        string rentalDate = consum.ConsumDate.ToShortDateString();
-                        float actualConsum = consum.TotalConsum;
-                        float lowerEstimate = Math.Max(0, forecast.LowerBoundConsum[index]);
-                        float estimate = forecast.ForecastedConsum[index];
-                        float upperEstimate = forecast.UpperBoundConsum[index];
-                        return $"Date: {rentalDate}\n" +
-                        $"Actual Consum: {actualConsum}\n" +
-                        $"Lower Estimate: {lowerEstimate}\n" +
-                        $"Forecast: {estimate}\n" +
-                        $"Upper Estimate: {upperEstimate}\n";
-                    });
-
-            // Output predictions
-
-            //* Esto no debe de estar en un service *//
-
-            Console.WriteLine("Rental Forecast");
-            Console.WriteLine("---------------------");
-            foreach (var prediction in forecastOutput)
+            return new EvaluateMetrics
             {
-                Console.WriteLine(prediction);
+                MAE = metrics.Average(error => Math.Abs(error)),
+                RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2)))
+            };
+        }
+
+        public IEnumerable<ForecastOutput> PredictModel(IEnumerable<ModelInput> modelInputs, int horizon, string modelPath)
+        {
+            var nextMonthValues = modelInputs.TakeLast(horizon);
+
+            // Load the forecast engine that has been previously saved.
+            ITransformer forecaster;
+
+            using (var file = File.OpenRead(modelPath))
+            {
+                forecaster = mlContext.Model.Load(file, out DataViewSchema schema);
             }
+
+            // We must create a new prediction engine from the persisted model.
+            TimeSeriesPredictionEngine<ModelInput, ModelOutput> forecastEngine = forecaster.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
+
+            var modelOutput = forecastEngine.Predict();
+
+            var forecastOutputs = nextMonthValues.Select((n, i) => new ForecastOutput
+            {
+                Date = n.ConsumDate,
+                Day = n.ConsumDate.Day,
+                ActualValue = n.TotalConsum,
+                LowerEstimate = modelOutput.LowerBoundConsum[i],
+                Estimate = modelOutput.ForecastedConsum[i],
+                UpperEstimate = modelOutput.UpperBoundConsum[i],
+            });
+
+            return forecastOutputs;
         }
     }
 }

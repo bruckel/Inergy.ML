@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 using System.IO;
+using Microsoft.ML;
 
 namespace Inergy.ML.Application
 {
@@ -42,9 +43,13 @@ namespace Inergy.ML.Application
                 //* Establecer la configuración de la conexión Mongo especificada en settings.json *//
                 services.AddSingleton<ILogger>(l => new LoggerConfiguration().ReadFrom.Configuration(hostContext.Configuration.GetSection("SerilogSettings")).CreateLogger());
 
+                //* Contexto de ML .Net *//
+                services.AddSingleton<MLContext>(m => new MLContext());
+
                 //* Inyección de dependencias del servicio *//
                 services.AddSingleton<IDataReadingService, DataReadingService>();
-                
+                services.AddSingleton<IMLService, MLService>();
+
                 services.AddHostedService<CosmosService>();
             })
             .UseSerilog()

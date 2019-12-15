@@ -9,6 +9,10 @@ namespace Inergy.ML.Data
 {
     public interface IDataReadingRepository : IMongoRepository<DataReading>
     {
+        Task<IEnumerable<DataReading>> GetDataReadings(string cups);
+
+        IEnumerable<DataReading> GetDataReadings2(string cups);
+
         Task<IEnumerable<DataReading>> GetDataReadings(string cups, DateTime beginTimeStamp, DateTime endTimeStamp);
 
         Task<bool> CreateDataReadings(IEnumerable<DataReading> dataReadings);

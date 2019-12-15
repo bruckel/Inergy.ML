@@ -8,7 +8,7 @@ namespace Inergy.ML.Model.ML
     {
         public DateTime ConsumDate { get; set; }
 
-        public float Year { get; set; }
+        public float Periode { get; set; }
 
         public float TotalConsum { get; set; }
     }

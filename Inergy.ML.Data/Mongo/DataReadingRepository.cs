@@ -23,6 +23,43 @@ namespace Inergy.ML.Data
         /// Obtener lecturas por identificador y rango de fechas
         /// </summary>
         /// <param name="cups">Identificador</param>
+        /// <returns>Resultado de la consulta</returns>
+        public async Task<IEnumerable<DataReading>> GetDataReadings(string cups)
+        {
+            try
+            {
+                //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
+                var dataReadings = this.GetAll().Find<DataReading>(e => e.Cups == cups);
+
+                //* Retornar valores coincidentes *//
+                return await dataReadings.ToListAsync();
+            }
+            catch (Exception exception)
+            {
+                throw (exception);
+            }
+        }
+
+        public IEnumerable<DataReading> GetDataReadings2(string cups)
+        {
+            try
+            {
+                //* Filtro para obtener datos para el suministro indicado y entre las horas especificadas *//
+                var dataReadings = this.GetAll().Find<DataReading>(e => e.Cups == cups);
+
+                //* Retornar valores coincidentes *//
+                return dataReadings.ToEnumerable();
+            }
+            catch (Exception exception)
+            {
+                throw (exception);
+            }
+        }
+
+        /// <summary>
+        /// Obtener lecturas por identificador y rango de fechas
+        /// </summary>
+        /// <param name="cups">Identificador</param>
         /// <param name="beginTimeStamp">Fecha de inicio</param>
         /// <param name="endTimeStamp">Fecha de fin</param>
         /// <returns>Resultado de la consulta</returns>
