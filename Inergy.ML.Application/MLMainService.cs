@@ -11,14 +11,16 @@ using System.Threading.Tasks;
 
 namespace Inergy.ML.Application
 {
-    internal class CosmosService : IHostedService
+    internal class MLMainService : IHostedService
     {
         private readonly IMLService mlService;
+        private readonly IAnomalyDetectionService anomalyDetectionService;
         private readonly ApiContext apiContext;
 
-        public CosmosService(IMLService mlService, ApiContext apiContext)
+        public MLMainService(IMLService mlService, IAnomalyDetectionService anomalyDetectionService, ApiContext apiContext)
         {
             this.mlService = mlService;
+            this.anomalyDetectionService = anomalyDetectionService;
             this.apiContext = apiContext;
         }
 
@@ -29,7 +31,7 @@ namespace Inergy.ML.Application
         /// <returns>Task</returns>
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            RunML("ES0021000019390674DS", 30);
+            //RunML("ES0021000019390674DS", 30);
 
             return Task.CompletedTask;
         }
@@ -37,6 +39,18 @@ namespace Inergy.ML.Application
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        public async void RunAnomalyDetection(string cups)
+        {
+            Console.WriteLine("\n================================================================================");
+            Console.WriteLine($"=============== Predicción de Consumo Cups: {cups} ===============");
+            Console.WriteLine("================================================================================\n");
+            Console.WriteLine($"Obtener anomalías para el Cups: {cups}\n");
+
+            await this.anomalyDetectionService.GetPredictedValues(cups);
+
+
         }
 
         public async void RunML(string cups, int horizon)

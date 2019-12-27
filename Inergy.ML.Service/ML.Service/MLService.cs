@@ -52,7 +52,9 @@ namespace Inergy.ML.Service
             //* Realizar predicción en base al modelo *//
             return PredictModel(modelInputs, horizon, modelPath);
         }
-        
+
+        //* Método común de obtencción de DataView *//
+
         public async Task<IEnumerable<ModelInput>> GetDataView(string cups)
         {
             //string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../Inergy.ML.Models"));

@@ -13,7 +13,7 @@ using Microsoft.ML;
 
 namespace Inergy.ML.Application
 {
-    class CosmosApplication
+    class MLMainApplication
     {
         /// <summary>
         /// Método principal de la aplicación de consola
@@ -50,7 +50,7 @@ namespace Inergy.ML.Application
                 services.AddSingleton<IDataReadingService, DataReadingService>();
                 services.AddSingleton<IMLService, MLService>();
 
-                services.AddHostedService<CosmosService>();
+                services.AddHostedService<MLMainService>();
             })
             .UseSerilog()
             .Build();
