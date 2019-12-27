@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="ES0021000019390674DS_daily_detectSpikeBySsa.zip" />
   </ItemGroup>
 
   <ItemGroup>

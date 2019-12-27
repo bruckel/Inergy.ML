@@ -10,6 +10,6 @@ namespace Inergy.ML.Service
 {
     public interface IAnomalyDetectionService
     {
-        Task<IEnumerable<Prediction>> GetPredictedValues(string cups);
+        Task<(IEnumerable<ModelInput>, IEnumerable<Prediction>)> GetPredictedValues(string cups);
     }
 }

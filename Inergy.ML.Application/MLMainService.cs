@@ -32,6 +32,7 @@ namespace Inergy.ML.Application
         public Task StartAsync(CancellationToken cancellationToken)
         {
             //RunML("ES0021000019390674DS", 30);
+            RunAnomalyDetection("ES0021000019390674DS");
 
             return Task.CompletedTask;
         }
@@ -48,9 +49,38 @@ namespace Inergy.ML.Application
             Console.WriteLine("================================================================================\n");
             Console.WriteLine($"Obtener anomalías para el Cups: {cups}\n");
 
-            await this.anomalyDetectionService.GetPredictedValues(cups);
+            var results = await this.anomalyDetectionService.GetPredictedValues(cups);
 
+            // Output the input data and predictions
+            Console.WriteLine("======Displaying anomalies in the Power meter data=========");
+            Console.WriteLine("Date\t\tConsum\tAlert\tScore\tP-Value");
 
+            if (results.Item2.Any())
+            {
+                var items = results.Item1.Zip(results.Item2, (first, second) => new
+                {
+                    Value = first,
+                    Prediction = second
+                });
+
+                foreach (var item in items)
+                {
+                    if (item.Prediction.ConsumPrediction[0] == 1)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+
+                    Console.WriteLine("{0}\t{1:0.0000}\t{2:0.00}\t{3:0.00}\t{4:0.00}", item.Value.ConsumDate.ToShortDateString(), 
+                                        item.Value.TotalConsum, item.Prediction.ConsumPrediction[0], 
+                                        item.Prediction.ConsumPrediction[1], item.Prediction.ConsumPrediction[2]);
+                    
+                    Console.ResetColor();
+                }
+            }
+
+            Console.WriteLine("==================================================================");
+            Console.WriteLine("==================================================================");
         }
 
         public async void RunML(string cups, int horizon)

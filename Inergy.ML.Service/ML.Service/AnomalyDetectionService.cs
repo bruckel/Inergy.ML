@@ -27,7 +27,7 @@ namespace Inergy.ML.Service
             this.mlContext = mlContext;
         }
 
-        public async Task<IEnumerable<Prediction>> GetPredictedValues(string cups)
+        public async Task<(IEnumerable<ModelInput>, IEnumerable<Prediction>)> GetPredictedValues(string cups)
         {
             //string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../Inergy.ML.Models/ForecastBySsa"));
             string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../"));
@@ -45,7 +45,7 @@ namespace Inergy.ML.Service
             }
 
             //* Realizar predicción en base al modelo *//
-            return PredictModel(modelInputs, modelPath);
+            return (modelInputs, PredictModel(modelInputs, modelPath));
         }
 
         private async Task<IEnumerable<ModelInput>> GetDataView(string cups)
@@ -100,7 +100,7 @@ namespace Inergy.ML.Service
             var transformedData = trainedModel.Transform(dataView);
 
             var predictions =  mlContext.Data.CreateEnumerable<Prediction>(transformedData, false);
-
+            
             return predictions;
         }
     }

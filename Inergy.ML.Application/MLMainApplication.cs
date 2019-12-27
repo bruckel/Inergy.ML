@@ -49,6 +49,7 @@ namespace Inergy.ML.Application
                 //* Inyección de dependencias del servicio *//
                 services.AddSingleton<IDataReadingService, DataReadingService>();
                 services.AddSingleton<IMLService, MLService>();
+                services.AddSingleton<IAnomalyDetectionService, AnomalyDetectionService>();
 
                 services.AddHostedService<MLMainService>();
             })
