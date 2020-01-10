@@ -1,0 +1,141 @@
+﻿@page "/errors"
+
+<style>
+    /* replace the default cell padding with custom element padding to remove traces of the original background */
+    .k-grid-table td {
+        padding: 0;
+        /*height: 40px;*/ /*you may want to set height to the cells so the height:100% to the child div works better*/
+    }
+
+    .k-grid-table td .my-padding {
+        height: 100%;
+        padding: 5px; /* or copy the original ones from our rendering */
+    }
+
+    /* set custom background */
+    .k-grid-table td .special {
+        background: orange;
+    }
+</style>
+
+@using Inergy.ML.Service
+@using Inergy.ML.Model.ML
+@using Telerik.Blazor.Components.DropDownList
+
+@inject IAnomalyDetectionService anomalyDetectionService
+@inject IApiService apiService
+
+<h1>Errores</h1>
+
+<label>Suministro (Cups)</label>
+<TelerikDropDownList @ref="ddlCups" Data="@cups" ValueChanged="@((string cups) => OnChangeCups(cups))">
+</TelerikDropDownList>
+
+<br />
+<br />
+
+@if (gridData != null && gridData.Any())
+{
+    <p>@message</p>
+
+    <TelerikGrid Data="@gridData" Pageable="false" Sortable="false" Groupable="false"
+                 FilterMode="Telerik.Blazor.GridFilterMode.None" Resizable="false" Reorderable="true">
+        <GridColumns>
+            <GridColumn Field="@(nameof(AnomalyDetection.Date))" Title="Fecha">
+                <Template>
+                    @{
+                        var data = context as AnomalyDetection;
+                        <div class="@(data.Alert == 1 ? "special my-padding" : "my-padding" )">@data.Date</div>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(AnomalyDetection.Consum))" Title="Consumo">
+                <Template>
+                    @{
+                        var data = context as AnomalyDetection;
+                        <div class="@(data.Alert == 1 ? "special my-padding" : "my-padding" )">@data.Consum</div>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(AnomalyDetection.Alert))" Title="Alert">
+                <Template>
+                    @{
+                        var data = context as AnomalyDetection;
+                        <div class="@(data.Alert == 1 ? "special my-padding" : "my-padding" )">@data.Alert</div>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(AnomalyDetection.Score))" Title="Score">
+                <Template>
+                    @{
+                        var data = context as AnomalyDetection;
+                        <div class="@(data.Alert == 1 ? "special my-padding" : "my-padding" )">@data.Score</div>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@(nameof(AnomalyDetection.PValue))" Title="P-Value">
+                <Template>
+                    @{
+                        var data = context as AnomalyDetection;
+                        <div class="@(data.Alert == 1 ? "special my-padding" : "my-padding" )">@data.PValue</div>
+                    }
+                </Template>
+            </GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+}
+else
+{
+    <p>Cargando...</p>
+}
+
+@code {
+
+    private IEnumerable<AnomalyDetection> gridData;
+    private IEnumerable<String> cups;
+    private string firstCups;
+    private string message;
+
+    TelerikDropDownList<string, string> ddlCups;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cups = apiService.GetCups();
+        firstCups = cups.FirstOrDefault();
+
+        var results = await anomalyDetectionService.GetPredictedValues(firstCups);
+
+        gridData = results.Item1.Zip(results.Item2, (first, second) => new AnomalyDetection
+        {
+            Date = String.Concat(first.ConsumDate.ToShortDateString(), " (", first.ConsumDate.DayOfWeek, ")"),
+            Consum = first.TotalConsum,
+            Alert = second.ConsumPrediction[0],
+            Score = second.ConsumPrediction[1],
+            PValue = second.ConsumPrediction[2],
+        });
+
+        string beginDate = results.Item1.Min(d => d.ConsumDate).ToShortDateString();
+        string endDate = results.Item1.Max(d => d.ConsumDate).ToShortDateString();
+
+        message = $"Fecha de consulta entre el {beginDate} y el {endDate}";
+    }
+
+    private async void OnChangeCups(string cups)
+    {
+        var results = await anomalyDetectionService.GetPredictedValues(cups);
+
+        gridData = results.Item1.Zip(results.Item2, (first, second) => new AnomalyDetection
+        {
+            Date = String.Concat(first.ConsumDate.ToShortDateString(), " (", first.ConsumDate.DayOfWeek, ")"),
+            Consum = first.TotalConsum,
+            Alert = second.ConsumPrediction[0],
+            Score = second.ConsumPrediction[1],
+            PValue = second.ConsumPrediction[2],
+        });
+
+        string beginDate = results.Item1.Min(d => d.ConsumDate).ToShortDateString();
+        string endDate = results.Item1.Max(d => d.ConsumDate).ToShortDateString();
+
+        message = $"Fecha de consulta entre el {beginDate} y el {endDate}";
+    }
+}

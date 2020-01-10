@@ -43,10 +43,10 @@ namespace Inergy.ML.Web
             services.AddSingleton<MLContext>(m => new MLContext());
 
             services.AddSingleton<IMLService, MLService>();
-
+            services.AddSingleton<IAnomalyDetectionService, AnomalyDetectionService>();
             services.AddSingleton<IApiService, ApiService>();
 
-            services.AddSingleton<WeatherForecastService>();
+            //services.AddSingleton<WeatherForecastService>();
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
