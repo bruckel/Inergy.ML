@@ -39,18 +39,18 @@ namespace Inergy.ML.Service
             string modelPath = Path.Combine(rootDir, $"{cups}_daily_timeSeriesSSA.zip");
 
             //* Cargar el modelo en el caso de que ya exista *//
-            bool createModel = !File.Exists(modelPath);
+            //bool createModel = !File.Exists(modelPath);
 
             var modelInputs = await GetDataView(cups);
 
-            if (createModel)
-            {
+            //if (createModel)
+            //{
                 //* Guardar métricas en el log de la aplicación *//
-                var metrics = TrainAndSaveModel(modelInputs, modelPath);
-            }
+                var forecaster = TrainAndSaveModel2(modelInputs, modelPath);
+            //}
 
             //* Realizar predicción en base al modelo *//
-            return PredictModel(modelInputs, horizon, modelPath);
+            return PredictModel(modelInputs, horizon, modelPath, forecaster);
         }
 
         //* Método común de obtencción de DataView *//
@@ -80,6 +80,59 @@ namespace Inergy.ML.Service
             var horizon = 31;
             var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
 
+            var lastDate = modelInputs.Max(p => p.ConsumDate).AddDays(-(horizon - 1)).Date;
+            var bound = modelInputs.Where(m => m.ConsumDate.Date == lastDate).Select(m => m.Periode).FirstOrDefault();
+
+            var trainData = mlContext.Data.FilterRowsByColumn(dataView, "Periode", upperBound: bound);
+            var testData = mlContext.Data.FilterRowsByColumn(dataView, "Periode", lowerBound: bound);
+
+            var uno = this.mlContext.Data.CreateEnumerable<ModelInput>(trainData, false);
+            var dos = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, false);
+
+            //* Número de días del conjunto de entrenamiento *//
+            var numSeriesDataPoints = mlContext.Data.CreateEnumerable<ModelInput>(trainData, reuseRowObject: true).Count();
+
+            var forecastingPipeline = mlContext.Forecasting.ForecastBySsa(
+                outputColumnName: "ForecastedConsum",
+                inputColumnName: "TotalConsum",
+                windowSize: 7,
+                seriesLength: 31,
+                trainSize: numSeriesDataPoints,
+                horizon: horizon,
+                confidenceLevel: 0.98f,
+                confidenceLowerBoundColumn: "LowerBoundConsum",
+                confidenceUpperBoundColumn: "UpperBoundConsum");
+
+            var forecastTransformer = forecastingPipeline.Fit(trainData);
+
+            var forecastEngine = forecastTransformer.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
+            forecastEngine.CheckPoint(mlContext, modelPath);
+
+            // Make predictions
+            IDataView predictions = forecastTransformer.Transform(testData);
+
+            // Actual values
+            IEnumerable<float> actual = this.mlContext.Data.CreateEnumerable<ModelInput>(testData, true).Select(observed => observed.TotalConsum);
+
+            // Predicted values
+            IEnumerable<float> forecast = this.mlContext.Data.CreateEnumerable<ModelOutput>(predictions, true).Select(prediction => prediction.ForecastedConsum[0]);
+
+            // Calculate error (actual - forecast)
+            var metrics = actual.Zip(forecast, (actualValue, forecastValue) => actualValue - forecastValue);
+
+            // Get metric averages
+            return new EvaluateMetrics
+            {
+                MAE = metrics.Average(error => Math.Abs(error)),
+                RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2)))
+            };
+        }
+
+        public ITransformer TrainAndSaveModel2(IEnumerable<ModelInput> modelInputs, string modelPath)
+        {
+            var horizon = 31;
+            var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
+
             var lastDate = modelInputs.Max(p => p.ConsumDate).AddDays(-(horizon-1)).Date;
             var bound = modelInputs.Where(m => m.ConsumDate.Date == lastDate).Select(m => m.Periode).FirstOrDefault();
 
@@ -105,8 +158,8 @@ namespace Inergy.ML.Service
 
             var forecastTransformer = forecastingPipeline.Fit(trainData);
 
-            var forecastEngine = forecastTransformer.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
-            forecastEngine.CheckPoint(mlContext, modelPath);
+            //var forecastEngine = forecastTransformer.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);
+            //forecastEngine.CheckPoint(mlContext, modelPath);
             
             // Make predictions
             IDataView predictions = forecastTransformer.Transform(testData);
@@ -121,24 +174,26 @@ namespace Inergy.ML.Service
             var metrics = actual.Zip(forecast, (actualValue, forecastValue) => actualValue - forecastValue);
 
             // Get metric averages
-            return new EvaluateMetrics
-            {
-                MAE = metrics.Average(error => Math.Abs(error)),
-                RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2)))
-            };
+            //return new EvaluateMetrics
+            //{
+            //    MAE = metrics.Average(error => Math.Abs(error)),
+            //    RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2)))
+            //};
+
+            return forecastTransformer;
         }
 
-        public IEnumerable<ForecastOutput> PredictModel(IEnumerable<ModelInput> modelInputs, int horizon, string modelPath)
+        public IEnumerable<ForecastOutput> PredictModel(IEnumerable<ModelInput> modelInputs, int horizon, string modelPath, ITransformer forecaster = null)
         {
             var nextMonthValues = modelInputs.TakeLast(horizon);
 
             // Load the forecast engine that has been previously saved.
-            ITransformer forecaster;
+            //ITransformer forecaster;
 
-            using (var file = File.OpenRead(modelPath))
-            {
-                forecaster = mlContext.Model.Load(file, out DataViewSchema schema);
-            }
+            //using (var file = File.OpenRead(modelPath))
+            //{
+            //    forecaster = mlContext.Model.Load(file, out DataViewSchema schema);
+            //}
 
             // We must create a new prediction engine from the persisted model.
             TimeSeriesPredictionEngine<ModelInput, ModelOutput> forecastEngine = forecaster.CreateTimeSeriesEngine<ModelInput, ModelOutput>(mlContext);

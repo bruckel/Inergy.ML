@@ -339,3 +339,5 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /Inergy.ML.Application/ES0021000019390674DS_daily_detectSpikeBySsa.zip
+/Inergy.ML.Web/ES0031405506464001BS_daily_detectSpikeBySsa.zip
+/Inergy.ML.Web/ES0021000020582703HT_daily_detectSpikeBySsa.zip

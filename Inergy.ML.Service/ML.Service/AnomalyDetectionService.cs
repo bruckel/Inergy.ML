@@ -34,18 +34,18 @@ namespace Inergy.ML.Service
             string modelPath = Path.Combine(rootDir, $"{cups}_daily_detectSpikeBySsa.zip");
 
             //* Cargar el modelo en el caso de que ya exista *//
-            bool createModel = !File.Exists(modelPath);
+            //bool createModel = !File.Exists(modelPath);
 
             var modelInputs = await GetDataView(cups);
 
-            if (createModel)
-            {
+            //if (createModel)
+            //{
                 //* Guardar métricas en el log de la aplicación *//
-                TrainAndSaveModel(modelInputs, modelPath);
-            }
+                var model = TrainAndSaveModel(modelInputs, modelPath);
+            //}
 
             //* Realizar predicción en base al modelo *//
-            return (modelInputs, PredictModel(modelInputs, modelPath));
+            return (modelInputs, PredictModel(modelInputs, modelPath, model));
         }
 
         private async Task<IEnumerable<ModelInput>> GetDataView(string cups)
@@ -68,7 +68,7 @@ namespace Inergy.ML.Service
             return modelInputs;
         }
 
-        private void TrainAndSaveModel(IEnumerable<ModelInput> modelInputs, string modelPath)
+        private ITransformer TrainAndSaveModel(IEnumerable<ModelInput> modelInputs, string modelPath)
         {
             var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
 
@@ -82,19 +82,21 @@ namespace Inergy.ML.Service
 
             var trainedModel = trainigPipeLine.Fit(dataView);
 
+            return trainedModel;
+
             // STEP 6: Save/persist the trained model to a .ZIP file
-            mlContext.Model.Save(trainedModel, dataView.Schema, modelPath);
+            //mlContext.Model.Save(trainedModel, dataView.Schema, modelPath);
         }
 
-        private IEnumerable<Prediction> PredictModel(IEnumerable<ModelInput> modelInputs, string modelPath)
+        private IEnumerable<Prediction> PredictModel(IEnumerable<ModelInput> modelInputs, string modelPath, ITransformer trainedModel = null)
         {
             // Load the forecast engine that has been previously saved.
-            ITransformer trainedModel;
+            //ITransformer trainedModel;
 
-            using (var file = File.OpenRead(modelPath))
-            {
-                trainedModel = mlContext.Model.Load(file, out DataViewSchema schema);
-            }
+            //using (var file = File.OpenRead(modelPath))
+            //{
+            //    trainedModel = mlContext.Model.Load(file, out DataViewSchema schema);
+            //}
 
             var dataView = mlContext.Data.LoadFromEnumerable<ModelInput>(modelInputs);
             var transformedData = trainedModel.Transform(dataView);

@@ -5,6 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ES0021000019390674DS_daily_detectSpikeBySsa.zip" />
+    <None Remove="ES0021000019390674DS_daily_timeSeriesSSA.zip" />
+    <None Remove="ES0021000019939333JD_daily_detectSpikeBySsa.zip" />
+    <None Remove="ES0021000019939333JD_daily_timeSeriesSSA.zip" />
+    <None Remove="ES0021000020582703HT_daily_detectSpikeBySsa.zip" />
+    <None Remove="ES0021000020582703HT_daily_timeSeriesSSA.zip" />
+    <None Remove="ES0031405506464001BS_daily_detectSpikeBySsa.zip" />
+    <None Remove="ES0031405506464001BS_daily_timeSeriesSSA.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Telerik.UI.for.Blazor.Trial" Version="2.5.0" />
   </ItemGroup>

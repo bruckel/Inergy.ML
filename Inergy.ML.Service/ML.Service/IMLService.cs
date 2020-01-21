@@ -17,6 +17,8 @@ namespace Inergy.ML.Service
 
         EvaluateMetrics TrainAndSaveModel(IEnumerable<ModelInput> modelInputs, string modelPath);
 
-        IEnumerable<ForecastOutput> PredictModel(IEnumerable<ModelInput> modelInputs, int horizon, string modelPath);
+        ITransformer TrainAndSaveModel2(IEnumerable<ModelInput> modelInputs, string modelPath);
+
+        IEnumerable<ForecastOutput> PredictModel(IEnumerable<ModelInput> modelInputs, int horizon, string modelPath, ITransformer forecaster);
     }
 }
